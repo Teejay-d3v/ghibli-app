@@ -211,16 +211,27 @@ onMounted(async () => {
   box-shadow: 0 8px 20px rgba(0,0,0,0.1);
 }
 
-/* Responsive */
+
+
+
 @media (max-width: 768px) {
   .banner-container { display: none; }
-  .film-modal { padding: 1rem; }
   .info-row-single {
-    flex-direction: column; /* stack vertically */
+    flex-direction: row; /* row, not column */
+    flex-wrap: wrap; /* allow wrapping */
+    gap: 8px;
   }
+
   .info-box-single {
-    font-size: 0.75rem;
-    min-width: auto;
+    flex: 1 1 calc(33.33% - 8px); /* default 3 per row */
+    min-width: 0;
+    margin-bottom: 8px;
+  }
+
+  /* Make 4th and 5th items take half width (2 per row) */
+  .info-box-single:nth-child(n+4) {
+    flex: 1 1 calc(50% - 8px);
   }
 }
+
 </style>
