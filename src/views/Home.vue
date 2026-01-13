@@ -1,73 +1,99 @@
 <template>
-  <div class="container my-5">
-    <h1 class="text-center mb-5">Studio Ghibli Films</h1>
+  <div class="films-page py-5">
+    <!-- Header -->
+    <div class="hero-header text-center mb-5">
+      <h1 class="ghibli-title">Studio Ghibli Films</h1>
+      <p class="ghibli-subtitle">Explore the magical worlds created by Studio Ghibli</p>
+    </div>
 
-    <div v-if="loading" class="row g-4">
-      <div class="col-md-3 col-sm-6" v-for="n in perPage" :key="'skeleton-' + n">
+    <!-- Controls -->
+    <div class="row justify-content-between mb-4 align-items-center">
+      <div class="col-md-6 mb-2">
+        <input
+          v-model="searchInput"
+          type="search"
+          class="form-control form-control-lg"
+          placeholder="Search films (e.g. Spirited Away)"
+        />
+      </div>
+      <div class="col-md-2 mb-2 text-end">
+        <select class="form-select" v-model.number="perPage">
+          <option :value="8">8 per page</option>
+          <option :value="16">16 per page</option>
+          <option :value="24">24 per page</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div v-if="error" class="alert alert-danger text-center">
+      Failed to load films. Please try again later.
+    </div>
+
+    <!-- Loading -->
+    <div v-else-if="loading" class="row g-4">
+      <div v-for="n in perPage" :key="`skeleton-${n}`" class="col-lg-3 col-md-4 col-sm-6">
         <div class="card h-100 shadow-sm">
           <div class="placeholder-glow">
-            <div class="placeholder card-img-top" style="height: 250px;"></div>
+            <div class="placeholder card-img-top" style="height:250px"></div>
           </div>
-          <div class="card-body d-flex flex-column">
-            <h5 class="placeholder-glow">
-              <span class="placeholder col-7"></span>
-            </h5>
-            <small class="placeholder-glow mb-2">
-              <span class="placeholder col-5"></span>
-            </small>
-            <p class="placeholder-glow mt-auto">
-              <span class="placeholder col-12"></span>
-              <span class="placeholder col-10"></span>
-              <span class="placeholder col-8"></span>
-            </p>
+          <div class="card-body">
+            <span class="placeholder col-7"></span>
+            <span class="placeholder col-5"></span>
+            <span class="placeholder col-12"></span>
           </div>
         </div>
       </div>
     </div>
 
-    <div v-else class="row g-4">
-      <div class="col-md-3 col-sm-6" v-for="film in paginatedFilms" :key="film.id">
+    <!-- Films with transition -->
+    <transition-group
+      name="film"
+      tag="div"
+      class="row g-4"
+      @after-leave="onAfterLeave"
+    >
+      <div
+        v-for="film in displayedFilms"
+        :key="displayKey(film)"
+        class="col-lg-3 col-md-4 col-sm-6"
+      >
         <router-link :to="`/film/${film.id}`" class="text-decoration-none">
           <div class="card film-card h-100 shadow-sm">
-            <div class="poster-wrapper">
-              <img :src="film.image" class="card-img-top film-img" :alt="film.title" />
-              <div class="meta-score-badge">⭐ {{ film.rt_score }}</div>
-              <div class="running-time-badge">⏱ {{ Math.floor(film.running_time / 60) }}h {{ film.running_time % 60 }}m</div>
-            </div>
+            <img
+              :src="film.image"
+              :alt="film.title"
+              class="card-img-top film-img"
+              loading="lazy"
+            />
             <div class="card-body d-flex flex-column">
               <h5 class="film-title mb-1">{{ film.title }}</h5>
               <small class="film-original mb-2">{{ film.original_title_romanised }}</small>
-              <p class="film-desc mt-auto">{{ film.description.slice(0, 100) }}...</p>
+              <p class="film-desc mt-auto">{{ film.description.slice(0, 100) }}…</p>
             </div>
           </div>
         </router-link>
       </div>
-    </div>
+    </transition-group>
 
-    <nav v-if="!loading" class="mt-5 d-none d-md-block">
+    <!-- Pagination -->
+    <nav v-if="!loading && totalPages > 1" class="mt-5">
       <ul class="pagination justify-content-center flex-wrap gap-2">
-        <li class="page-item" :class="{ disabled: page === 1 }">
-          <button type="button" class="page-link prev-btn" @click.prevent="page = Math.max(page - 1, 1)">Prev</button>
+        <li class="page-item" :class="{ disabled: page === 1 || isAnimating }">
+          <button class="page-link" @click="changePage(page - 1)" :disabled="page === 1 || isAnimating">Prev</button>
         </li>
-        <li class="page-item" v-for="p in desktopPages" :key="p" :class="{ active: page === p }">
-          <button type="button" class="page-link" @click.prevent="page = p">{{ p }}</button>
-        </li>
-        <li class="page-item" :class="{ disabled: page === totalPages }">
-          <button type="button" class="page-link next-btn" @click.prevent="page = Math.min(page + 1, totalPages)">Next</button>
-        </li>
-      </ul>
-    </nav>
 
-    <nav v-if="!loading" class="mt-5 d-block d-md-none">
-      <ul class="pagination justify-content-center flex-wrap gap-2">
-        <li class="page-item" :class="{ disabled: page === 1 }">
-          <button type="button" class="page-link prev-btn" @click.prevent="page = Math.max(page - 1, 1)">Prev</button>
+        <li
+          v-for="p in visiblePages"
+          :key="p"
+          class="page-item"
+          :class="{ active: page === p || isAnimating }"
+        >
+          <button class="page-link" @click="changePage(p)" :disabled="isAnimating">{{ p }}</button>
         </li>
-        <li class="page-item" v-for="p in mobilePages" :key="p" :class="{ active: page === p }">
-          <button type="button" class="page-link" @click.prevent="page = p">{{ p }}</button>
-        </li>
-        <li class="page-item" :class="{ disabled: page === totalPages }">
-          <button type="button" class="page-link next-btn" @click.prevent="page = Math.min(page + 1, totalPages)">Next</button>
+
+        <li class="page-item" :class="{ disabled: page === totalPages || isAnimating }">
+          <button class="page-link" @click="changePage(page + 1)" :disabled="page === totalPages || isAnimating">Next</button>
         </li>
       </ul>
     </nav>
@@ -75,122 +101,159 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch, nextTick } from "vue";
+
+const API_URL = "https://ghibliapi.vercel.app/films";
 
 const films = ref([]);
 const page = ref(1);
-const perPage = 4;
+const perPage = ref(8);
 const loading = ref(true);
+const error = ref(false);
+const searchInput = ref("");
+const searchQuery = ref("");
+let searchTimeout;
 
-onMounted(async () => {
-  loading.value = true;
+// For animation control
+const displayedFilms = ref([]);
+const pendingPage = ref(null);
+const isAnimating = ref(false);
+
+watch(searchInput, (value) => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    searchQuery.value = value.trim().toLowerCase();
+    page.value = 1;
+    updateDisplayedFilms();
+  }, 300);
+});
+
+watch(perPage, () => {
+  page.value = 1;
+  updateDisplayedFilms();
+});
+
+onMounted(fetchFilms);
+
+async function fetchFilms() {
   try {
-    const res = await fetch("https://ghibliapi.vercel.app/films");
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error("Fetch failed");
     films.value = await res.json();
-  } catch (err) {
-    console.error(err);
+  } catch (e) {
+    console.error(e);
+    error.value = true;
   } finally {
     loading.value = false;
+    updateDisplayedFilms();
   }
+}
+
+const filteredFilms = computed(() => {
+  if (!searchQuery.value) return films.value;
+  return films.value.filter(film =>
+    [film.title, film.original_title_romanised].some(text =>
+      text?.toLowerCase().includes(searchQuery.value)
+    )
+  );
 });
 
-const totalPages = computed(() => Math.ceil(films.value.length / perPage));
-const paginatedFilms = computed(() => films.value.slice((page.value - 1) * perPage, page.value * perPage));
-const desktopPages = computed(() => Array.from({ length: totalPages.value }, (_, i) => i + 1));
-const mobilePages = computed(() => {
-  const maxVisible = 4;
-  let start = page.value - Math.floor(maxVisible / 2);
-  let end = page.value + Math.floor(maxVisible / 2) - 1;
-  if (start < 1) start = 1, end = Math.min(maxVisible, totalPages.value);
-  if (end > totalPages.value) end = totalPages.value, start = Math.max(totalPages.value - maxVisible + 1, 1);
+const totalPages = computed(() => Math.ceil(filteredFilms.value.length / perPage.value));
+
+const paginatedFilms = computed(() => {
+  const start = (page.value - 1) * perPage.value;
+  return filteredFilms.value.slice(start, start + perPage.value);
+});
+
+const visiblePages = computed(() => {
+  const max = 4;
+  let start = Math.max(1, page.value - Math.floor(max / 2));
+  let end = Math.min(totalPages.value, start + max - 1);
+  if (end - start + 1 < max) start = Math.max(1, end - max + 1);
   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
 });
+
+function changePage(newPage) {
+  if (newPage < 1 || newPage > totalPages.value) return;
+  if (isAnimating.value) return; // prevent clicks during animation
+  pendingPage.value = newPage;
+  isAnimating.value = true;
+  displayedFilms.value = []; // trigger leave animation
+}
+
+function onAfterLeave() {
+  if (pendingPage.value !== null) {
+    page.value = pendingPage.value;
+    pendingPage.value = null;
+    updateDisplayedFilms();
+    isAnimating.value = false;
+  }
+}
+
+function updateDisplayedFilms() {
+  displayedFilms.value = paginatedFilms.value;
+}
+
+function displayKey(film) {
+  // unique key for animation per page
+  return page.value + '-' + film.id;
+}
 </script>
 
 <style scoped>
-.film-card 
-  { border: none; 
-    border-radius: 14px; 
-    overflow: hidden; 
-    background: #fff; 
-    transition: box-shadow 0.3s ease; 
-  }
-.film-card:hover 
-  { 
-    box-shadow: 0 15px 30px rgba(0,0,0,0.18); 
-  }
-.poster-wrapper 
-  { 
-    position: relative; 
-    overflow: hidden; 
-  }
+.films-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
 
-.film-img 
-  {
-    height: 250px; 
-    object-fit: cover; 
-    transition: transform 0.3s ease; 
-    }
+/* Header */
+.hero-header {
+  padding: 3rem 1rem;
+  border-radius: 16px;
+}
 
-.poster-wrapper:hover .film-img 
-  { 
-    transform: scale(1.04); 
-  }
+.ghibli-title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
 
-.film-title 
-  { 
-    font-weight: 700; 
-    font-size: 1rem; 
-    color: #222; 
-  }
+.ghibli-subtitle {
+  margin-top: 0.5rem;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.75);
+  text-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
 
-.film-original 
-  { 
-    font-size: 0.85rem; 
-    color: #777; 
-  }
+/* Card */
+.film-card {
+  width: 100%;
+  transition: transform 0.3s ease;
+}
+.film-card:hover {
+  transform: scale(1.02);
+}
+.film-img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+}
 
-.film-desc 
-  { 
-    font-size: 0.9rem; 
-    color: #555; 
-    margin-top: 0.5rem; 
-    line-height: 1.4; 
-    min-height: 3rem; 
-  }
-
-.meta-score-badge, .running-time-badge 
-  { 
-    position: absolute;
-    top: 8px; 
-    padding: 4px 8px; 
-    border-radius: 12px; 
-    font-weight: bold; 
-    font-size: 0.85rem; 
-    background: rgba(255,255,255,0.9); 
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2); 
-  }
-.meta-score-badge 
-  { 
-    right: 8px; 
-  }
-.running-time-badge 
-  { 
-    left: 8px; 
-  }
-.prev-btn, .next-btn 
-  { 
-    background: #0056b3 !important; 
-    color: white; 
-    border-radius: 20px !important; 
-  }
-.prev-btn:hover, .next-btn:hover 
-  { 
-    background: linear-gradient(135deg, #0056b3, #0056b3) !important; 
-    transform: scale(1.03); 
-  }
-.prev-btn:active, .next-btn:active 
-  { 
-  transform: scale(0.96); 
-  }
+/* Transition-group animations */
+.film-enter-active {
+  animation: fadeInRight 0.5s;
+}
+.film-leave-active {
+  animation: fadeOutLeft 0.5s;
+}
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeOutLeft {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(-30px); }
+}
 </style>

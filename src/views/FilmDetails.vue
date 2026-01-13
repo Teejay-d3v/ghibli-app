@@ -1,203 +1,69 @@
 <template>
-  <div class="container my-5">
+  <div class="film-page">
+    <!-- Back Button -->
     <router-link to="/" class="back-btn-overlay">
       <span class="icon">←</span> Back
     </router-link>
 
-    <!-- Skeleton Loader -->
-    <div v-if="!film">
-      <!-- Banner Skeleton -->
-      <div class="mb-4 banner-container shadow-sm placeholder-glow">
-        <div class="placeholder banner-placeholder rounded"></div>
-      </div>
-
-      <!-- Desktop Skeleton -->
-      <div class="d-none d-md-block">
-        <div class="row align-items-start mb-4">
-          <div class="col-md-4">
-            <div class="card shadow poster-card w-100 placeholder-glow">
-              <div class="placeholder card-img-top poster-placeholder rounded"></div>
-            </div>
-          </div>
-
-          <div class="col-md-8">
-            <div class="placeholder-glow mb-2">
-              <span class="placeholder col-6 mb-2"></span>
-              <span class="placeholder col-4 mb-1"></span>
-              <span class="placeholder col-5 mb-1"></span>
-              <span class="placeholder col-3 mb-3"></span>
-            </div>
-            <div class="d-flex flex-wrap gap-2 mb-3">
-              <span class="placeholder col-4 p-3 rounded"></span>
-              <span class="placeholder col-3 p-3 rounded"></span>
-              <span class="placeholder col-2 p-3 rounded"></span>
-            </div>
-            <div class="d-flex flex-wrap gap-2">
-              <span class="placeholder col-3 p-3 rounded"></span>
-              <span class="placeholder col-3 p-3 rounded"></span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Mobile Skeleton -->
-      <div class="d-md-none">
-        <div class="d-flex flex-row align-items-center mb-3">
-          <div style="flex: 0 0 120px;">
-            <div class="card shadow poster-card w-100 placeholder-glow">
-              <div class="placeholder card-img-top poster-placeholder rounded"></div>
-            </div>
-          </div>
-          <div class="flex-fill ms-3">
-            <span class="placeholder col-8 mb-1"></span>
-            <span class="placeholder col-6 mb-1"></span>
-            <span class="placeholder col-5 mb-1"></span>
-          </div>
-        </div>
-
-        <div class="description bg-light rounded shadow-sm p-3 placeholder-glow mb-3">
-          <span class="placeholder col-12 mb-1"></span>
-          <span class="placeholder col-12 mb-1"></span>
-          <span class="placeholder col-10 mb-1"></span>
-        </div>
-
-        <div class="row mb-3 g-2">
-          <div class="col-4">
-            <div class="placeholder col-12 p-3 rounded"></div>
-          </div>
-          <div class="col-4">
-            <div class="placeholder col-12 p-3 rounded"></div>
-          </div>
-          <div class="col-4">
-            <div class="placeholder col-12 p-3 rounded"></div>
-          </div>
-          <div class="col-6">
-            <div class="placeholder col-12 p-3 rounded"></div>
-          </div>
-          <div class="col-6">
-            <div class="placeholder col-12 p-3 rounded"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Actual Film Data -->
-    <div v-else>
-      <div class="mb-4 banner-container shadow-sm">
-        <img :src="film.movie_banner" class="w-100 rounded banner-img" />
+    <!-- Film Card Modal -->
+    <div class="film-modal shadow-lg px-3 pt-2 rounded">
+      <!-- Banner -->
+      <div class="banner-container mb-4">
+        <img :src="film?.movie_banner" class="banner-img rounded" />
         <div class="banner-overlay"></div>
       </div>
 
-      <div class="d-none d-md-block">
-        <div class="row align-items-start mb-4">
-          <div class="col-md-4">
-            <div class="card shadow poster-card w-100">
-              <img :src="film.image" class="card-img-top rounded poster-img" />
-            </div>
-          </div>
-
-          <div class="col-md-8">
-            <div class="mb-2">
-              <h1 class="fw-bold mb-1">{{ film.title }}</h1>
-              <small class="text-muted d-block">Original Title</small>
-              <p class="text-muted fs-6 mb-1">{{ film.original_title }}</p>
-              <p class="text-muted fs-6 fst-italic mb-0">{{ film.original_title_romanised }}</p>
-            </div>
-
-            <div class="d-flex flex-wrap gap-2">
-              <div class="bg-light rounded shadow-sm p-2">
-                <h5 class="fw-bold mb-2">Description</h5>
-                <p class="text-secondary mb-0" style="line-height:1.6;">
-                  {{ film.description }}
-                </p>
-              </div>
-              <div class="info-box shadow-sm bg-light p-2 small">
-                <small class="text-muted d-block">Release</small>
-                <span class="fs-4 text-warning mb-1">📅</span>
-                <span class="fw-bold">{{ film.release_date }}</span>
-              </div>
-              <div class="info-box shadow-sm bg-light p-2 small">
-                <small class="text-muted d-block">Duration</small>
-                <span class="fs-4 text-warning mb-1">⏱️</span>
-                <span class="fw-bold">{{ Math.floor(film.running_time / 60) }}h {{ film.running_time % 60 }}m</span>
-              </div>
-              <div class="info-box shadow-sm p-2 small">
-                <small class="text-muted d-block">RT Score</small>
-                <span class="fs-4 text-warning mb-1">⭐</span>
-                <span class="fw-bold">{{ film.rt_score }}</span>
-              </div>
-            </div>
-
-            <div class="d-flex flex-wrap gap-2">
-              <div class="info-box shadow-sm bg-light p-2 small">
-                <small class="text-muted d-block">Director</small>
-                <span class="fw-bold">{{ film.director }}</span>
-              </div>
-              <div class="info-box shadow-sm bg-light p-2 small">
-                <small class="text-muted d-block">Producer</small>
-                <span class="fw-bold">{{ film.producer }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="d-md-none">
-        <div class="d-flex flex-row align-items-center mb-3">
-          <div style="flex: 0 0 120px;">
-            <div class="card shadow poster-card w-100">
-              <img :src="film.image" class="card-img-top rounded poster-img" />
-            </div>
-          </div>
-          <div class="flex-fill ms-3">
-            <h1 class="fw-bold mb-1">{{ film.title }}</h1>
-            <small class="text-muted d-block">Original Title :</small>
-            <p class="text-muted fs-6 mb-1">{{ film.original_title }}</p>
-            <p class="text-muted fs-6 fst-italic mb-0">{{ film.original_title_romanised }}</p>
+      <div class="row align-items-start g-3">
+        <!-- Poster -->
+        <div class="col-md-4">
+          <div class="poster-card shadow-sm">
+            <img :src="film?.image" class="poster-img rounded" />
           </div>
         </div>
 
-        <div class="description bg-light rounded shadow-sm p-3">
-          <h5 class="fw-bold mb-2">Description</h5>
-          <p class="text-secondary mb-0" style="line-height:1.5;">
-            {{ film.description }}
-          </p>
-        </div>
+        <!-- Details -->
+        <div class="col-md-8">
+          <!-- Title & Original Title -->
+          <div class="mb-3">
+            <h1 class="fw-bold mb-1 text-dark">{{ film?.title }}</h1>
+            <small class="text-muted">Original Title</small>
+            <p class="text-dark fs-6 mb-1">{{ film?.original_title }}</p>
+            <p class="text-dark fs-6 fst-italic">{{ film?.original_title_romanised }}</p>
+          </div>
 
-        <div class="row mb-3 g-2">
-          <div class="col-4">
-            <div class="shadow-sm bg-light p-3 text-center rounded d-flex flex-column align-items-center">
-              <small class="fw-bold">Release Date</small>
-              <span class="fs-4 text-warning mb-1">📅</span>
-              <span class="text-muted mb-2">{{ film.release_date }}</span>
+          <!-- Description -->
+          <div class="description-box mb-3">
+            <h5 class="fw-bold mb-2 text-dark">Description</h5>
+            <p class="text-dark">{{ film?.description }}</p>
+          </div>
+
+          <!-- Info Boxes -->
+          <div class="info-row-single">
+            <div class="info-box-single text-center">
+              <small class="text-muted d-block">Release</small>
+              <span class="fs-5 text-warning mb-1">📅</span>
+              <span class="fw-bold text-dark">{{ film?.release_date }}</span>
+            </div>
+            <div class="info-box-single text-center">
+              <small class="text-muted d-block">Duration</small>
+              <span class="fs-5 text-warning mb-1">⏱</span>
+              <span class="fw-bold text-dark">{{ Math.floor(film?.running_time/60) }}h {{ film?.running_time%60 }}m</span>
+            </div>
+            <div class="info-box-single text-center">
+              <small class="text-muted d-block">RT Score</small>
+              <span class="fs-5 text-warning mb-1">⭐</span>
+              <span class="fw-bold text-dark">{{ film?.rt_score }}</span>
+            </div>
+            <div class="info-box-single text-center">
+              <small class="text-muted d-block">Director</small>
+              <span class="fw-bold text-dark">{{ film?.director }}</span>
+            </div>
+            <div class="info-box-single text-center">
+              <small class="text-muted d-block">Producer</small>
+              <span class="fw-bold text-dark">{{ film?.producer }}</span>
             </div>
           </div>
-          <div class="col-4">
-            <div class="shadow-sm bg-light p-3 text-center rounded d-flex flex-column align-items-center">
-              <small class="fw-bold">Duration</small>
-              <span class="fs-4 text-warning mb-1">⏱️</span>
-              <span class="text-muted mb-2">{{ Math.floor(film.running_time / 60) }}h {{ film.running_time % 60 }}m</span>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="shadow-sm bg-light p-3 text-center rounded d-flex flex-column align-items-center">
-              <span class="fw-bold">Meta Score</span>
-              <span class="fs-4 text-warning mb-1">⭐</span>
-              <span class="text-muted mb-2">{{ film.rt_score }}</span>
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="shadow-sm bg-light p-3 text-center rounded d-flex flex-column align-items-center">
-              <span class="fw-bold">Director</span>
-              <span class="text-muted mb-2">{{ film.director }}</span>
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="shadow-sm bg-light p-3 text-center rounded d-flex flex-column align-items-center">
-              <span class="fw-bold">Producer</span>
-              <span class="text-muted mb-2">{{ film.producer }}</span>
-            </div>
-          </div>
+
         </div>
       </div>
     </div>
@@ -218,47 +84,19 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Keep your existing styles */
-.banner-container {
-  height: 520px;
-  overflow: hidden;
-  border-radius: 0.5rem;
+/* Page Background */
+.film-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #39acdd, #6dc2fa);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: relative;
-}
-.banner-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 0.5rem;
-}
-.banner-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.15);
-  border-radius: 0.5rem;
+  padding: 1rem;
 }
 
-.poster-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.poster-card:hover {
-  transform: scale(1.03);
-  box-shadow: 0 10px 18px rgba(0,0,0,0.25);
-}
-.poster-img {
-  height: 350px;
-  object-fit: cover;
-  border-radius: 0.5rem;
-}
 
-.description {
-  margin-top: 1rem;
-  font-size: 0.95rem;
-}
-
+/* Back Button */
 .back-btn-overlay {
   position: absolute;
   top: 20px;
@@ -267,57 +105,122 @@ onMounted(async () => {
   align-items: center;
   gap: 6px;
   padding: 10px 18px;
-  background-color: #0056b3;
+  background-color: #5065c4;
   color: #fff;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.95rem;
   border-radius: 50px;
   text-decoration: none;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  transition: all 0.2s ease;
-  z-index: 15;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  z-index: 20;
 }
-
 .back-btn-overlay:hover {
-  background-color: #003d80;
+  background-color: #2137ff;
+  transform: translateY(-3px) scale(1.02);
+}
+
+/* Modal Card */
+.film-modal {
+  background: #fff;
+  border-radius: 1rem;
+  max-width: 900px;
+  width: 100%;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  color: #333;
+  padding: 1rem 1rem 2rem 1rem;
+}
+
+
+/* Banner */
+.banner-container {
+  position: relative;
+  border-radius: 1rem;
+  overflow: hidden;
+  height: 400px;
+  margin-bottom: 1.5rem;
+}
+.banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.banner-overlay {
+  position: absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  background: linear-gradient(to top, rgba(255,255,255,0.3), transparent 60%);
+}
+.banner-title {
+  position: absolute;
+  bottom: 1rem;
+  width: 100%;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #333;
+  text-shadow: 0 2px 6px rgba(255,255,255,0.8);
+}
+
+/* Poster */
+.poster-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 1rem;
+}
+.poster-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+.poster-img {
+  width: 100%;
+  border-radius: 0.5rem;
+  height: 80%;
+  object-fit: cover;
+}
+
+/* Description Box */
+.description-box {
+  background: #fff3d1;
+  color: #333;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  line-height: 1.6;
+}
+
+/* Info Boxes in 1 row on desktop, stacked on mobile */
+.info-row-single {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: nowrap;
+  margin-top: 0.5rem;
+}
+.info-box-single {
+  background: #ffefef;
+  color: #333;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.5rem;
+  flex: 1;
+  font-size: 0.85rem;
+  text-align: center;
+  min-width: 100px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.info-box-single:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
 }
 
-.back-btn-overlay:active {
-  transform: scale(0.96);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-}
-
-.back-btn-overlay .icon {
-  font-size: 1.1rem;
-}
-
+/* Responsive */
 @media (max-width: 768px) {
-  .banner-container {
-    height: 300px;
+  .banner-container { display: none; }
+  .film-modal { padding: 1rem; }
+  .info-row-single {
+    flex-direction: column; /* stack vertically */
   }
-  .poster-img {
-    height: 120px;
-  }
-}
-
-/* Skeleton placeholders */
-.banner-placeholder {
-  width: 100%;
-  height: 520px;
-}
-.poster-placeholder {
-  width: 100%;
-  height: 350px;
-}
-
-@media (max-width: 768px) {
-  .banner-placeholder {
-    height: 300px;
-  }
-  .poster-placeholder {
-    height: 120px;
+  .info-box-single {
+    font-size: 0.75rem;
+    min-width: auto;
   }
 }
 </style>
